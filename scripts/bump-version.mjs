@@ -8,7 +8,7 @@
 //
 // The version lives in three files that have to agree — soundbase-plugin.json
 // (what the Lab and the host read), package.json and package-lock.json (what
-// npm reads, and what `npm run doctor` checks against the manifest). The
+// npm reads, and what npm run doctor checks against the manifest). The
 // release workflow refuses a tag whose version differs from the manifest, so
 // a bump that touches one file and not another is a failed release later.
 //
@@ -25,18 +25,20 @@ const usage =
   'usage: bump-version.mjs <patch|minor|major|x.y.z>  (run from the plugin directory)';
 
 if (!arg || !/^(patch|minor|major|\d+\.\d+\.\d+)$/.test(arg)) {
-  process.stderr.write(`${usage}\n`);
+  process.stderr.write(usage + '\n');
   process.exit(2);
 }
 
 const read = (name) => JSON.parse(readFileSync(join(ROOT, name), 'utf8'));
 const before = read('package.json').version;
 
-// npm knows how to bump, and it keeps package-lock.json's root entry in step,
-// which a hand edit of package.json would not.
-execFileSync('npm', ['version', arg, '--no-git-tag-version'], {
+// On Windows, npm is exposed as npm.cmd and must be launched through a shell.
+execFileSync(process.platform === 'win32' ? 'npm.cmd' : 'npm', [
+  'version', arg, '--no-git-tag-version',
+], {
   cwd: ROOT,
   stdio: ['ignore', 'ignore', 'inherit'],
+  shell: process.platform === 'win32',
 });
 const version = read('package.json').version;
 
@@ -45,7 +47,7 @@ const manifestPath = join(ROOT, 'soundbase-plugin.json');
 const manifest = readFileSync(manifestPath, 'utf8');
 const updated = manifest.replace(
   /^(\s*"version":\s*)"[^"]*"/m,
-  `$1"${version}"`
+  (match, prefix) => prefix + JSON.stringify(version)
 );
 if (updated === manifest && read('soundbase-plugin.json').version !== version) {
   process.stderr.write(
@@ -57,10 +59,10 @@ writeFileSync(manifestPath, updated);
 
 const check = read('soundbase-plugin.json').version;
 if (check !== version) {
-  process.stderr.write(`manifest says ${check} after writing ${version}\n`);
+  process.stderr.write('manifest says ' + check + ' after writing ' + version + '\n');
   process.exit(1);
 }
 process.stderr.write(
-  `${before} -> ${version} in package.json, package-lock.json, soundbase-plugin.json\n`
+  before + ' -> ' + version + ' in package.json, package-lock.json, soundbase-plugin.json\n'
 );
-process.stdout.write(`${version}\n`);
+process.stdout.write(version + '\n');
