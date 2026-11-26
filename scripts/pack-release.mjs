@@ -285,12 +285,28 @@ rmSync(join(packDir, 'scripts'), { recursive: true });
 const zipPath = join(outDir, `${id}-${version}.zip`);
 mkdirSync(outDir, { recursive: true });
 rmSync(zipPath, { force: true });
-run('zip', ['-qr', zipPath, packName], { cwd: tmp });
+const windows = process.platform === 'win32';
+if (windows) {
+  // Build on Windows so native dependencies such as node-hid match the host
+  // that will load the plugin. Compress-Archive is included with PowerShell.
+  const psQuote = (value) => `'${value.replaceAll("'", "''")}'`;
+  const command =
+    `$ErrorActionPreference = 'Stop'; ` +
+    `Compress-Archive -LiteralPath ${psQuote(join(tmp, packName))} ` +
+    `-DestinationPath ${psQuote(zipPath)} -Force`;
+  run('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', command], {
+    cwd: tmp,
+  });
+} else {
+  run('zip', ['-qr', zipPath, packName], { cwd: tmp });
+}
 rmSync(tmp, { recursive: true, force: true });
 
 // -- check it against the Lab's rules ----------------------------------------
 
-const entries = capture('unzip', ['-Z1', zipPath]).split('\n');
+const listCommand = windows ? 'tar.exe' : 'unzip';
+const listArgs = windows ? ['-tf', zipPath] : ['-Z1', zipPath];
+const entries = capture(listCommand, listArgs).split(/\r?\n/);
 const prefix = `${packName}/`;
 const stray = entries.find((e) => !e.startsWith(prefix) || e.includes('..'));
 if (stray) fail(`unexpected zip entry: ${stray}`);
@@ -302,9 +318,10 @@ for (const f of [
 ]) {
   if (!entries.includes(prefix + f)) fail(`the zip has no ${f} at its root`);
 }
-const zipped = JSON.parse(
-  capture('unzip', ['-p', zipPath, `${prefix}soundbase-plugin.json`])
-);
+const manifestArgs = windows
+  ? ['-xOf', zipPath, `${prefix}soundbase-plugin.json`]
+  : ['-p', zipPath, `${prefix}soundbase-plugin.json`];
+const zipped = JSON.parse(capture(windows ? 'tar.exe' : 'unzip', manifestArgs));
 if (zipped.id !== id || zipped.version !== version) {
   fail(
     `the zip's manifest says ${zipped.id} ${zipped.version}, expected ${id} ${version}`
