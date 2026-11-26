@@ -6,6 +6,7 @@
   "license": "MIT",
   "repository": "https://github.com/aluizbreda/relacart-udiscover-soundbase-plugin",
   "maintainers": [{ "name": "André Breda — Educa Áudio" }],
+  "platforms": ["win32-x64"],
   "contract": {
     "core": "1.5",
     "modules": { "SpectrumAnalyzer": "1.3" }
