@@ -1,6 +1,6 @@
 {
   "name": "soundbase-plugin-relacart-udiscover",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "SoundBase live-scan adapter for the Relacart U.Discover.",
   "license": "MIT",
   "type": "module",

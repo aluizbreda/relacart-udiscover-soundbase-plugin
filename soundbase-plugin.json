@@ -2,7 +2,7 @@
   "manifestVersion": 1,
   "id": "relacart-udiscover",
   "name": "Relacart U.Discover",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "repository": "https://github.com/aluizbreda/relacart-udiscover-soundbase-plugin",
   "maintainers": [{ "name": "André Breda — Educa Áudio" }],
