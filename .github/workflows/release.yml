@@ -46,7 +46,8 @@ permissions:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    # Build the bundled native node-hid dependency for SoundBase's Windows host.
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v6
 
