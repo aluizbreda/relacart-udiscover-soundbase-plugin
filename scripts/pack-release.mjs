@@ -304,42 +304,50 @@ rmSync(tmp, { recursive: true, force: true });
 
 // -- check it against the Lab's rules ----------------------------------------
 
-const listCommand = windows ? 'tar.exe' : 'unzip';
-const listArgs = windows ? ['-tf', zipPath] : ['-Z1', zipPath];
-const entries = capture(listCommand, listArgs).split(/\r?\n/);
-const prefix = `${packName}/`;
+// bsdtar on Windows can read a drive-letter path as a remote host. Run it
+// beside the archive and pass only its filename there.
+const archiveName = windows ? relative(dirname(zipPath), zipPath) : zipPath;
+const archiveCwd = windows ? dirname(zipPath) : ROOT;
+const listArgs = windows ? ['-tf', archiveName] : ['-Z1', zipPath];
+const entries = capture(windows ? 'tar.exe' : 'unzip', listArgs, {
+  cwd: archiveCwd,
+}).split(/\r?\n/);
+const prefix = packName + '/';
 const stray = entries.find((e) => !e.startsWith(prefix) || e.includes('..'));
-if (stray) fail(`unexpected zip entry: ${stray}`);
+if (stray) fail('unexpected zip entry: ' + stray);
 for (const f of [
   'soundbase-plugin.json',
   'LICENSE',
   'main.js',
   'package.json',
 ]) {
-  if (!entries.includes(prefix + f)) fail(`the zip has no ${f} at its root`);
+  if (!entries.includes(prefix + f)) fail('the zip has no ' + f + ' at its root');
 }
 const manifestArgs = windows
-  ? ['-xOf', zipPath, `${prefix}soundbase-plugin.json`]
-  : ['-p', zipPath, `${prefix}soundbase-plugin.json`];
-const zipped = JSON.parse(capture(windows ? 'tar.exe' : 'unzip', manifestArgs));
+  ? ['-xOf', archiveName, prefix + 'soundbase-plugin.json']
+  : ['-p', zipPath, prefix + 'soundbase-plugin.json'];
+const zipped = JSON.parse(
+  capture(windows ? 'tar.exe' : 'unzip', manifestArgs, { cwd: archiveCwd })
+);
 if (zipped.id !== id || zipped.version !== version) {
   fail(
-    `the zip's manifest says ${zipped.id} ${zipped.version}, expected ${id} ${version}`
+    "the zip's manifest says " + zipped.id + ' ' + zipped.version +
+      ', expected ' + id + ' ' + version
   );
 }
 const bytes = statSync(zipPath).size;
 if (bytes > ASSET_MAX_BYTES) {
-  fail(`the zip is ${bytes} bytes; the Lab caps a release asset at 250 MB`);
+  fail('the zip is ' + bytes + ' bytes; the Lab caps a release asset at 250 MB');
 }
 
 log(
-  `${relative(ROOT, zipPath)} — ${id} ${version}, ${entries.length} entries, ` +
-    `${(bytes / 1024 / 1024).toFixed(1)} MB`
+  relative(ROOT, zipPath) + ' — ' + id + ' ' + version + ', ' + entries.length +
+    ' entries, ' + (bytes / 1024 / 1024).toFixed(1) + ' MB'
 );
-log(`identity — ${packed.soundbase.contentHash}`);
+log('identity — ' + packed.soundbase.contentHash);
 if (!releasing) {
   log(
     'not a release: attach this to a GitHub Release yourself, or push a v' +
-      `${version} tag and let .github/workflows/release.yml do it`
+      version + ' tag and let .github/workflows/release.yml do it'
   );
 }
