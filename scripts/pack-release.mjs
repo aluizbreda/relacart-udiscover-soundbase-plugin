@@ -309,9 +309,7 @@ rmSync(tmp, { recursive: true, force: true });
 const archiveName = windows ? relative(dirname(zipPath), zipPath) : zipPath;
 const archiveCwd = windows ? dirname(zipPath) : ROOT;
 const listArgs = windows ? ['-tf', archiveName] : ['-Z1', zipPath];
-const entries = capture(windows ? 'tar.exe' : 'unzip', listArgs, {
-  cwd: archiveCwd,
-}).split(/\r?\n/);
+const entries = capture(windows ? 'tar.exe' : 'unzip', listArgs, { cwd: archiveCwd }).split(/\r?\n/);
 const prefix = packName + '/';
 const stray = entries.find((e) => !e.startsWith(prefix) || e.includes('..'));
 if (stray) fail('unexpected zip entry: ' + stray);
