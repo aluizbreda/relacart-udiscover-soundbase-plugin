@@ -1,0 +1,31 @@
+{
+  "manifestVersion": 1,
+  "id": "relacart-udiscover",
+  "name": "Relacart U.Discover",
+  "version": "0.1.0",
+  "license": "MIT",
+  "repository": "https://github.com/aluizbreda/relacart-udiscover-soundbase-plugin",
+  "maintainers": [{ "name": "André Breda — Educa Áudio" }],
+  "contract": {
+    "core": "1.5",
+    "modules": { "SpectrumAnalyzer": "1.3" }
+  },
+  "runtime": { "type": "node", "entrypoint": "main.js" },
+  "deployment": ["managed"],
+  "template": { "name": "soundbase-plugin-template", "version": "1.0.18" },
+  "products": [
+    {
+      "deviceTypeId": "plugin:relacart-udiscover/u-discover",
+      "manufacturer": { "id": "relacart", "name": "Relacart" },
+      "model": {
+        "id": "u-discover",
+        "name": "U.Discover",
+        "displayName": "Relacart U.Discover"
+      },
+      "family": { "id": "relacart-analyzers", "name": "Relacart analyzers" },
+      "capabilities": { "spectrumAnalyzer": true },
+      "traits": { "isSpectrumAnalyzer": true }
+    }
+  ],
+  "stateKeys": []
+}

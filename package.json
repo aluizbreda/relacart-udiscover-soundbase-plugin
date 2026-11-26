@@ -1,0 +1,33 @@
+{
+  "name": "soundbase-plugin-relacart-udiscover",
+  "version": "0.1.0",
+  "description": "SoundBase live-scan adapter for the Relacart U.Discover.",
+  "license": "MIT",
+  "type": "module",
+  "main": "main.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node main.js",
+    "test": "node --test driver/__tests__/*.test.js examples/*/__tests__/*.test.js",
+    "doctor": "node scripts/doctor.mjs",
+    "manifest": "node scripts/validate-manifest.mjs",
+    "smoke": "node scripts/smoke.mjs",
+    "rename": "node scripts/rename.mjs",
+    "bump": "node scripts/bump-version.mjs",
+    "pack:release": "node scripts/pack-release.mjs"
+  },
+  "dependencies": {
+    "@soundbase/plugin-contract": "^0.13.0",
+    "@soundbase/plugin-shell": "^0.13.0",
+    "node-hid": "^3.4.0"
+  },
+  "soundbase": {
+    "template": {
+      "name": "soundbase-plugin-template",
+      "version": "1.0.18"
+    },
+    "generatedFrom": "f8cfc075d0401500159799b7a9acacc056a82713"
+  }
+}
